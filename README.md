@@ -4,7 +4,7 @@
 1. The project is configured for MySQL. So change your driver and DB username + password in `/conf/jooq-codegen.xml`. 
 The xml tags `jdbc.url` and `generator.database.inputSchema` also need to be changed.
 2. Also change `application.conf` accordingly.
-3. Change database dialect in `PersonRepo.java` - so you can use your database specific features.
+3. Change database dialect in `PersonRepo.java` - so you can use database specific features.
 3. Run the sql scripts to generate database schema (skip this if you already have a database).
 4. Run the task `jooqCodegen` which would read the schema and generate 
 classes corresponding to the database tables in the folder 
@@ -21,12 +21,10 @@ SBT setting `jooqConfigFile`.
 ### Motivation
 There already exists an excellent plugin [sbt-jooq](https://github.com/kxbmap/sbt-jooq/)
 which should be the go-to solution for jOOQ integration. It covers a lot of use cases:
-* works for commercial jOOQ
 * configurable to generate jOOQ classes for various frequencies 
 (generate every time before compilation, or only if classes are absent, or never generate - relies on the user to run task manually)
 * handles text-substitution in jooq-codegen.xml - which means you can use environment variables for database password,
 or use SBT-settings like "Compile / sourceManaged" directly in the xml to set your target directory.
-* works for all types of sbt projects.
 
 If you are on JDK 8 you should definitely use the plugin. However, the plugin only supports up to JDK 10.
 
@@ -44,19 +42,19 @@ to fork or contribute to the [sbt-jooq](https://github.com/kxbmap/sbt-jooq/) plu
   <summary>For Java 8</summary>
   <p>Works for all new-ish versions of jOOQ: 3.11, 3.12</p>
   <p>In theory it should also work for earlier-but-new-ish versions 
-     (this would be versions after `org.jooq.util.GenerationTool` 
-     was renamed to `org.jooq.codegen.GenerationTool`) but testing is required.</p>
+    (this would be versions after <code>org.jooq.util.GenerationTool</code> 
+    was renamed to <code>org.jooq.codegen.GenerationTool</code>) but testing is required.</p>
 </details>
 <details>
   <summary>For Java 11+</summary>
   <p>Only works for jOOQ 3.12</p>
   <p>
-    This is due to classloading issues (JDK9 removed JAXB. JAXB implementations can be pulled in from maven it cannot be found by classloader).
+    This is due to issues related to classloading (JDK9 removed JAXB. JAXB implementations can be pulled in from Maven but it cannot be found by classloader).
   </p>
-  <p>*Requires knowledge about classloaders and SBT to solve this*</p>
+  <p><i>Requires knowledge about classloaders and SBT to debug this.</i></p>
   <p>
-    In response to Java 9 JPMS, jOOQ 3.12 has removed the dependency on JAXB and substituted with a home-grown
-    XML library instead. Hence no more classloader issues.
+    jOOQ 3.12 has removed the dependency on JAXB and substituted with a home-grown
+    XML library instead. So we don't have classloader issues anymore.
   </p>  
 </details>
 
