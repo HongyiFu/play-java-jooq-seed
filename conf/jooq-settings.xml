@@ -1,0 +1,10 @@
+<settings xmlns="http://www.jooq.org/xsd/jooq-runtime-3.12.0.xsd">
+    <!-- Add your own settings. These are some I personally find useful -->
+<!--    <inListPadding>true</inListPadding>-->
+<!--    <updatablePrimaryKeys>true</updatablePrimaryKeys>-->
+<!--    <executeWithOptimisticLocking>true</executeWithOptimisticLocking>-->
+<!--    <executeWithOptimisticLockingExcludeUnversioned>false</executeWithOptimisticLockingExcludeUnversioned>-->
+<!--    <renderCatalog>false</renderCatalog>-->
+<!--    <renderSchema>false</renderSchema>-->
+<!--    <renderNameCase>UPPER</renderNameCase>-->
+</settings>
