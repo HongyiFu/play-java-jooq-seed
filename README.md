@@ -10,6 +10,7 @@ The xml tags `jdbc.url` and `generator.database.inputSchema` also need to be cha
 classes corresponding to the database tables in the folder 
 `/target/scala-2.13/src_managed/main`.
 5. Now the project should compile properly with these jOOQ generated classes.
+6. If you want to use this for Java 8, replace all `var` usages with explicit types.
 
 ### Upgrade
 
