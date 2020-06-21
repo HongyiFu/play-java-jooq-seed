@@ -197,11 +197,11 @@ public class Database implements play.db.Database {
     }
 
     // ---------- Extra methods to use org.jooq.DSLContext directly ----------
-    // These methods throws Throwable, and they also allows callers throwing Exception in the block.
-    // They also allow transaction to commit in spite of Exception if the exception thrown is instance
+    // These methods throws Exception, and they also allows callers throwing Exception in the block.
+    // They also allow transaction to commit in spite of exception if the exception thrown is instance
     // of NoRollbackException.
 
-    // ----- Variant which propagate Exception -----
+    // ----- Variant which propagate Exception: method names ends with "Ex" -----
 
     public void transactionEx(Consumer1<DSLContext> block) throws Exception {
         transactionEx0(null, true, ctx -> {
@@ -296,7 +296,7 @@ public class Database implements play.db.Database {
         }
     }
 
-    // ----- Variant which does not propagate Exception -----
+    // ----- Variant which does not propagate Exception: method names does not end with "Ex" -----
 
     public void transaction(Consumer<DSLContext> block) {
         transaction0(null, true, ctx -> {

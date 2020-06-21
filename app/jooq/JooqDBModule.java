@@ -81,7 +81,7 @@ public class JooqDBModule extends AbstractModule {
      * instead of {@link play.db.Database}.
      */
     public static class NamedDatabaseProvider implements Provider<jooq.Database> {
-        @Inject private play.db.DBApi dbApi = null;
+        @Inject private play.db.DBApi dbApi;
         private final String name;
 
         public NamedDatabaseProvider(String name) {

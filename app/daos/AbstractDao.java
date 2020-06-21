@@ -3,6 +3,7 @@ package daos;
 import org.jooq.DSLContext;
 
 import javax.inject.Provider;
+import java.util.Objects;
 
 public abstract class AbstractDao {
 
@@ -40,12 +41,12 @@ public abstract class AbstractDao {
      * @param ctx the DSLContext to set.
      */
     public void setTemporaryContext(DSLContext ctx) {
-        this.ctx = ctx;
+        this.ctx = Objects.requireNonNull(ctx);
     }
 
     /**
-     * If you have set the DSLContext previously by calling {@link #setTemporaryContext(DSLContext)} you need to
-     * call this method to reset the context if you intend to continue using this instance,
+     * If you have set a temporary DSLContext previously by calling {@link #setTemporaryContext(DSLContext)},
+     * you need to call this method to reset the context if you intend to continue to use this instance,
      * so the context (i.e. connection) can be obtained from ThreadLocal (i.e. from {@link jooq.ConnectionContext}).
      */
     public void clearTemporaryContext() {
