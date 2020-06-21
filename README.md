@@ -13,7 +13,7 @@ This seed makes use of the [sbt-jooq](https://github.com/kxbmap/sbt-jooq/) plugi
 ### Notes
 1.  The seed was tested using Java 14.0.1, Play 2.8.2, PostgreSQL 12.3.
 
-2.  To work with PostgreSQL's CITEXT, you need to configure a `<forcedType>` for the code-generator to generate the right type (String instead of Object) and also set in `application.conf` the connection parameter `stringtype = unspecified`. The exact mechanic is unclear to me but you can find more details [here](https://github.com/jOOQ/jOOQ/issues/7093).
+2.  The seed makes use of PostgreSQL's CITEXT. To work with PostgreSQL's CITEXT, you need to configure a `<forcedType>` for the code-generator to generate the right type (String instead of Object) and also set in `application.conf` the connection parameter `stringtype = unspecified`. You can find more details [here](https://github.com/jOOQ/jOOQ/issues/7093). This is shown in the seed.
 
 3.  The seed makes use of jOOQ's "returning" feature which automatically refreshes all columns of the record that was just inserted/updated.
 
@@ -23,13 +23,13 @@ This seed makes use of the [sbt-jooq](https://github.com/kxbmap/sbt-jooq/) plugi
 
 4.  The custom class `jooq.Database` is injected when `play.db.Database` is requested, in place of the original `play.db.DefaultDatabase` provided out-of-the-box by Play.
 
-    *   This is to provide additional methods that would provide you with with a `DSLContext` instead of `java.sql.Connection` for convenience.
+    *   This is to provide additional methods that would provide you with with a `DSLContext` instead of a `java.sql.Connection` for convenience.
 
     *   In addition, at the start of a transaction, the `Connection` is put into a `ThreadLocal` so that we can inject DAOs directly. The DAOs have 2 constructors:
-        *   One for Dependency Injection: requiring a `Provider<DSLContext>`. Calling the `Provider<DSLContext>.get()` will always give us a `DSLContext` based on the latest `Connection` (however be careful when in nested transaction).
-        *   Another constructor for manual instantiation: useful to demarcate nested transaction (for e.g. you want to instantiate 2 different DAOs manually to differentiate between the inner and outer DAOs), and also for use in places where you don't want to use DI.
+        *   One for DI: requiring a `Provider<DSLContext>`. Calling the `Provider<DSLContext>.get()` will always give us a `DSLContext` based on the latest `Connection` (however be careful when reasoning in nested transaction, the same DAO instance will use different `Connection` in the outer and inner transaction).
+        *   Another constructor for manual instantiation: useful to demarcate nested transaction (for example you want to instantiate 2 different DAOs manually to differentiate between the inner and outer DAOs), and also for use in places where you don't want to use DI.
 
-    *   When using the transactional methods in `jooq.Database`, if a `jooq.NoRollbackException` was thrown, the transaction would still be committed (and exception rethrown). This may be useful in cases where after having done some important updates/inserts, you want to do some view processing in the same transaction before exiting the transaction. With this, you can wrap the view processing part with try-catch and re-throw with `NoRollbackException` to make sure the inserts/updates are committed. It should be noted, however, this is in contrast with the layering normally seen when applying Domain Driven Design (where service layer typically returns DTOs and close the transaction and view layers would operation on these DTOs).
+    *   When using the transactional methods in `jooq.Database`, if a `jooq.NoRollbackException` was thrown, the transaction would still be committed (and exception rethrown). This may be useful in cases where after having done some important updates/inserts, you want to do some view processing in the same transaction before exiting the transaction. With this, you can wrap the view processing part with try-catch and re-throw with `NoRollbackException` to make sure the inserts/updates are committed. It should be noted, however, this is in contrast with the practice of layering normally seen when applying Domain Driven Design (where service layer typically returns DTOs and close the transaction and the view layer would operate on these DTOs returned by service layer).
 
 5. By default, jOOQ generates Pojos for each table. These pojo classes are especially useful for quick mapping to JSON. They are named after the table by default.
 
