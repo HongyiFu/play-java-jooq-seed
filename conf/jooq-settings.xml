@@ -1,10 +1,12 @@
-<settings xmlns="http://www.jooq.org/xsd/jooq-runtime-3.12.0.xsd">
+<settings xmlns="http://www.jooq.org/xsd/jooq-runtime-3.13.0.xsd">
     <!-- Add your own settings. These are some I personally find useful -->
-<!--    <inListPadding>true</inListPadding>-->
-<!--    <updatablePrimaryKeys>true</updatablePrimaryKeys>-->
-<!--    <executeWithOptimisticLocking>true</executeWithOptimisticLocking>-->
-<!--    <executeWithOptimisticLockingExcludeUnversioned>false</executeWithOptimisticLockingExcludeUnversioned>-->
-<!--    <renderCatalog>false</renderCatalog>-->
-<!--    <renderSchema>false</renderSchema>-->
-<!--    <renderNameCase>UPPER</renderNameCase>-->
+    <inListPadding>true</inListPadding>
+    <updatablePrimaryKeys>true</updatablePrimaryKeys>
+    <!-- See https://www.jooq.org/doc/3.13/manual/sql-building/dsl-context/custom-settings/settings-return-all-on-store/ -->
+    <returnAllOnUpdatableRecord>true</returnAllOnUpdatableRecord>
+    <executeWithOptimisticLocking>true</executeWithOptimisticLocking>
+    <executeWithOptimisticLockingExcludeUnversioned>true</executeWithOptimisticLockingExcludeUnversioned>
+<!--    <renderCatalog>true</renderCatalog>-->
+<!--    <renderSchema>true</renderSchema>-->
+<!--    <renderNameCase>AS_IS</renderNameCase>-->
 </settings>

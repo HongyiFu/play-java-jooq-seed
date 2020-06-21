@@ -1,22 +1,23 @@
-import metabuild.JooqCodegenBuildInfo._
-
 name := """play-java-jooq-seed"""
 version := "1.0"
-scalaVersion := "2.13.0"
+scalaVersion := "2.13.2"
 
-lazy val root = (project in file(".")).enablePlugins(PlayJava)
-
-lazy val jdbcDriverModuleId: ModuleID = {
-  val parts = jdbcDriverStr.split(":")
-  parts(0) % parts(1) % parts(2)
-}
+lazy val root = (project in file("."))
+  .enablePlugins(PlayJava)
+  .enablePlugins(JooqCodegenPlugin)
+  // LauncherJarPlugin is a solution to a Windows-only issue. mac and Linux users can comment away this
+  // See https://github.com/playframework/playframework/issues/2854
+  // Solution from https://www.scala-sbt.org/sbt-native-packager/recipes/longclasspath.html
+  .enablePlugins(LauncherJarPlugin)
 
 libraryDependencies ++= Seq(
   guice,
   javaJdbc,
-  jdbcDriverModuleId,
-  "org.jooq" % "jooq" % jooqVersion,
-  // If you have configured jOOQ to display JPA annotations in jOOQ record classes, you need JPA.
+  javaWs,
+  "org.postgresql" % "postgresql" % "42.2.13",
+  "org.postgresql" % "postgresql" % "42.2.13" % JooqCodegen,
+  // If you have configured jOOQ to display JPA annotations in jOOQ record classes, you would need JPA.
+  // Personally I prefer to have it because it shows nullable columns.
   "javax.persistence" % "javax.persistence-api" % "2.2",
 )
 
@@ -25,65 +26,25 @@ Test / testOptions += Tests.Argument(TestFrameworks.JUnit, "-a", "-v")
 ThisBuild / scalacOptions ++= Seq("-encoding", "utf8", "-deprecation", "-feature", "-unchecked")
 ThisBuild / javacOptions ++= Seq("-Xlint:unchecked", "-Xlint:deprecation")
 
-// ----------  jOOQ settings  ----------
+// suppress API doc generation
+Compile / doc / sources := Seq.empty
+// avoid to publish the documentation artifact
+Compile / packageDoc / publishArtifact := false
 
-lazy val jooqConfigFile = settingKey[File]("jOOQ codegen configuration file location")
-jooqConfigFile := baseDirectory.value / "conf" / "jooq-codegen.xml"
+// ----- jOOQ settings -----
 
-lazy val jooqConfig = taskKey[org.jooq.meta.jaxb.Configuration]("jOOQ codegen configuration class")
-jooqConfig := {
-  autoClose(new java.io.FileInputStream(jooqConfigFile.value)) { in =>
-    org.jooq.codegen.GenerationTool.load(in)
-  }
-}
+jooqVersion := "3.13.2"
+jooqCodegenConfig := baseDirectory.value / "conf" / "jooq-codegen.xml"
+jooqCodegenStrategy := CodegenStrategy.Never // using manual codegen
 
-// You can add more custom behaviors to this task to emulate the jooqCodegenStrategy setting (ALWAYS/ IfAbsent/ Never) of sbt-jooq plugin
-lazy val jooqGenFiles = taskKey[Seq[File]]("jOOQ generated files")
-jooqGenFiles := {
-  val config = jooqConfig.value
-  val targetDirStr = config.getGenerator.getTarget.getDirectory
-  var targetDir = file(targetDirStr)
-  if (!targetDir.isAbsolute) {
-    targetDir = baseDirectory.value / targetDirStr
-  }
-  val packageDir = config.getGenerator.getTarget.getPackageName.replace('.', '/')
-  val finder: PathFinder = ( (targetDir / packageDir) ** "*" ).filter(_.isFile)
-  finder.get
-}
+// If you want to use a custom generator, you need to specify the full name of the class in jooq-codegen.xml.
+// You could hardcode this classname in the xml or use the text substitution feature.
+// See https://github.com/kxbmap/sbt-jooq#jooqcodegenkeys
+lazy val customJooqGeneratorClass = settingKey[String]("Full classname of custom jOOQ Generator class.")
+customJooqGeneratorClass := "play.java.jooq.seed.codegen.PostfixPojoClassGeneratorStrategy"
 
-lazy val jooqCodegen = taskKey[Unit]("Run jOOQ code generation")
-jooqCodegen := {
-  val log = streams.value.log
-  log.info(f"jOOQ config file is: ${jooqConfigFile.value} %nRunning jOOQ codegen..")
+// Then add our new settingKey
+Compile / jooqCodegenKeys += customJooqGeneratorClass
 
-  // run main method of jOOQ GenerationTool
-  org.jooq.codegen.GenerationTool.generate(jooqConfig.value)
-}
 
-// We need to add the jOOQ generated files to sourceGenerators.
-// See - https://stackoverflow.com/a/53468356/8795412 and https://www.scala-sbt.org/release/docs/Howto-Generating-Files.html#Generate+sources
-Compile / sourceGenerators += jooqGenFiles.taskValue
 
-// Implement Java try-with-resource in Scala, from https://stackoverflow.com/a/39868021/8795412
-def autoClose[A <: AutoCloseable, B](closeable: A)(fun: A => B): B = {
-  var t: Throwable = null
-  try {
-    fun(closeable)
-  } catch {
-    case funT: Throwable ⇒
-      t = funT
-      throw t
-  } finally {
-    if (t != null) {
-      try {
-        closeable.close()
-      } catch {
-        case closeT: Throwable ⇒
-          t.addSuppressed(closeT)
-          throw t
-      }
-    } else {
-      closeable.close()
-    }
-  }
-}
